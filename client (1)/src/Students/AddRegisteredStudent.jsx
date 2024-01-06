@@ -1,0 +1,821 @@
+import React, { useContext, useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import Sidebar from '../Components/Sidebar';
+import Header from '../Components/Header';
+import Swal from 'sweetalert2'
+import CreateIcon from '@mui/icons-material/Create';
+import { StudentContext } from '../context/StudentState';
+
+
+export default function AddRegisteredStudent
+  () {
+
+    const location = useLocation();
+    const { data } = location.state;
+
+    console.log("register data =",data)
+
+  document.title = "StudentDashboard - Add Student"
+  let ContextValue = useContext(StudentContext);
+  const navigation = useNavigate()
+
+  const [allBatch, setAllBatch] = useState([])
+  const [runningBatch, setRunningBatch] = useState()
+  const [methodStatus, setMethodStatus] = useState();
+  const [course, setCourse] = useState();
+  const [allcourse, setAllCourse] = useState();
+  const [selectedRunningBatch, setSelectedRunningBatch] = useState()
+  const [trainer, setTrainer] = useState('')
+  const [counselor, setCouselor] = useState()
+  const [editStatus, setEditStatus] = useState([])
+  let counselorData = {}
+  let trainerData   = {}
+
+  useEffect(() => {
+    fetchAllBatchCourse();
+    fetchRunningBatch();
+    fetchAllCounselor();
+    getAllCourse();
+    setEditStatusFunc();
+
+  }, [])
+
+  const getAllCourse = async () => {
+    let allCourse = await ContextValue.getAllMainSubCourse();
+    console.log("course =", allCourse, allCourse.courses);
+    setCourse(allCourse.allCourse);
+    setAllCourse(allCourse.courses);
+  };
+
+  const fetchAllCounselor = async () => {
+    const counselorData = await ContextValue.getAllCounselor();
+
+    if (counselorData.status === "active") {
+      setCouselor(counselorData.counselorData)
+
+    }
+  }
+
+
+  async function fetchRunningBatch() {
+    try {
+      const status = await ContextValue.getRunningBatch();
+
+      if (status.status === "active") {
+
+        setRunningBatch(status.runningBatches)
+        setSelectedRunningBatch(status.runningBatches)
+      }
+      else {
+
+      }
+
+    } catch (error) {
+      // console.error('Error fetching admin status:', error);
+    }
+  }
+
+  async function fetchAllBatchCourse() {
+    try {
+      const status = await ContextValue.getAllBatchCourse();
+
+
+      if (status.status === "active") {
+
+        setAllBatch(status.batchCourse[0].Course)
+      }
+      else {
+
+      }
+
+    } catch (error) {
+      console.error('Error fetching admin status:', error);
+    }
+  }
+
+  var length = 8,
+    charset = "abcdefghijklmnop.,qrstuvwx$%yzABCDEF.,'908*&+GHIJKLMN@#$%!,OPQ!@RSTUVWXY0123456789",
+    randomGeneratedPassowrd = "";
+  for (var i = 0, n = charset.length; i < length; ++i) {
+    randomGeneratedPassowrd += charset.charAt(Math.floor(Math.random() * n));
+  }
+
+  // const { udata, setUdata } = useContext(adddata);
+  const navigate = useNavigate();
+
+  const [inpval, setINP] = useState({
+    Name: data.Name,
+    Batch: '',
+    Email: data.Email,
+    Number: data.Number,
+    Pname: data.Pname,
+    Pnumber: data.Pnumber,
+    RegistrationDate: data.RegistrationDate,
+    Course: data.Course,
+    subCourse:data.subCourse,
+    Counselor: data.Counselor,
+    Fees: '',
+    totalInstallment:data.totalInstallment,
+    RegistrationFees: data.RegistrationFees,
+    TrainerName: data.TrainerName,
+    BatchStartDate: '',
+    BatchTiming: '',
+    BatchMode: data.BatchMode,
+    PaymentMode: data.PaymentMode,
+    PaymentMethod:data.PaymentMethod,
+    Payment: '',
+    Remark: data.Remark,
+    CourseFees:data.CourseFees,
+    RegistrationNo:data.RegistrationNo,
+    CounselorID:data.CounselorId,
+    joinTime: data.joinTime,
+    joinDate: data.joinDate,
+    url: '' // Add a file state
+  });
+
+
+
+  const handleFileChange = (e) => {
+    // console.log("file =", e.target.files[0])
+    setINP({ ...inpval, file: e.target.files[0] });
+  };
+
+  const addinpdata = async (e) => {
+    e.preventDefault();
+
+    console.log('inpval add student =',inpval)
+
+    const formData = new FormData();
+
+    for (const field in inpval) {
+      formData.append(field, inpval[field]);
+    }
+
+    let remainingFees  =(inpval.Fees - inpval.RegistrationFees)
+    formData.append("remainingFees", remainingFees);
+    console.log('inpval ', inpval,remainingFees)
+    ContextValue.updateProgress(30)
+    ContextValue.updateBarStatus(true)
+    try {
+      const res = await fetch('http://localhost:8000/updateRegisterStudent', {
+        method: 'POST',
+        body: JSON.stringify(inpval),
+      });
+      
+      ContextValue.updateProgress(60)
+      const data = await res.json();
+      console.log("data registration added =",data)
+      ContextValue.updateProgress(100)
+      ContextValue.updateBarStatus(false)
+   
+      
+      if (res.status === 422 || !data) {
+        Swal.fire({   
+          icon:  'error',
+          title: 'Oops...',
+          text:  'Something went wrong!',
+        })
+
+        alert('error');
+      }
+       else {
+        RegisteredSuccess()
+        let tempInpval = inpval
+        for (const field in inpval) {
+          tempInpval[field]="";
+        }
+        setINP(tempInpval)
+      }
+    }
+    catch (error) {
+      Swal.fire({   
+        icon:  'error',
+        title: 'Oops...',
+        text:  'Something went wrong!',
+      })
+      console.log('error =', error.message)
+    }
+  };
+
+  const RegisteredSuccess= ()=>{
+
+  Swal.fire({
+    position: 'center',
+    icon: 'success',
+    title: 'Student Has Been Added',
+    showConfirmButton: false,
+    timer: 1500
+  })
+}
+
+ 
+  const setBatch = async (name, value) => {
+
+    setINP({ ...inpval, [name]: value })
+
+    let tempTrainer = selectedRunningBatch.filter(data => {
+      return data.Batch === value ? data : false
+    })
+    setTrainer(tempTrainer[0].Trainer)
+    console.log("temp trainer =",tempTrainer)
+
+    let tempInpval = { ...inpval }
+    tempInpval.TrainerName = tempTrainer[0].Trainer
+    tempInpval.BatchTiming = tempTrainer[0].BatchTime
+    tempInpval.Batch = tempTrainer[0].Batch
+    tempInpval.TrainerID = tempTrainer[0].TrainerID
+    setINP(tempInpval)
+  }
+
+  const setCounselor = (name)=>{
+    let tempInpval = { ...inpval }
+    tempInpval.Counselor = name
+    tempInpval.CounselorID = counselorData[name]
+    console.log("counselor id =",counselorData[name])
+    console.log('set counselor =',name,counselorData,counselorData[name],tempInpval)
+    setINP(tempInpval)
+  }
+
+  const handleRemarkChange = (e) => {
+    const newRemark = e.target.value;
+
+    let tempInpVal = {...inpval}
+    tempInpVal.Remark = newRemark
+    console.log("temp val =",tempInpVal)
+
+    setINP(tempInpVal)
+  };
+
+  const setMainCourse = (subCourse) => {
+    let mainCourse;
+    course.map((data) => {
+      data.subCourse.map((element) => {
+        if (element === subCourse) {
+          mainCourse = data.mainCourse;
+        }
+      });
+    });
+
+    console.log("sub and main Course =", subCourse, mainCourse);
+    setINP({ ...inpval, ["Course"]: mainCourse, ["subCourse"]: subCourse });
+
+    const status = isAllFieldsFilled();
+    setAllFieldStatus(status);
+  };
+
+  const setCounselorData = (e) => {
+    console.log(
+      "select index =",
+      e.target.selectedIndex,
+      counselor[e.target.selectedIndex - 1].counselorNo
+    );
+    setINP({
+      ...inpval,
+      ["CounselorId"]: counselor[e.target.selectedIndex - 1].counselorNo,
+      ["counselorNumber"]: counselor[e.target.selectedIndex - 1].Number,
+      ["Counselor"]: e.target.value,
+      ["counselorReference"]:
+        counselor[e.target.selectedIndex - 1].counselorReference,
+    });
+    const status = isAllFieldsFilled();
+    setAllFieldStatus(status);
+  };
+
+  const setMethod = (value) => {
+    setMethodStatus(value);
+    if (value === "EMI") {
+      setINP({ ...inpval, ["PaymentMode"]: value, ["PaymentMethod"]: value });
+      const status = isAllFieldsFilled();
+      setAllFieldStatus(status);
+    }
+  };
+
+  // const setEditStatusFunc = ()=>{
+  //   const editFormGroup = document.getElementsByClassName('edit-form-group').length
+
+  //   console.log("edit form group =",editFormGroup)
+
+  //   let editStatusArray = editStatus
+
+  //   for(let i=0; i<editFormGroup; i++){
+
+  //     editStatusArray.push(false)
+  //   }
+
+  //   console.log('edit array =',editStatusArray)
+  //   setEditStatus(editStatusArray)
+  // }
+
+  
+
+  const setEditStatusFunc =()=>{
+
+    const editIcon = document.getElementsByClassName('editIcon')
+
+    editIcon.forEach((data,index)=>{
+      data.addEventListener('click',()=>{
+        console.log('click function running',index)
+            const editFormGroup = document.getElementsByClassName('edit-form-group')
+            console.log('editFormGroup =',editFormGroup[index])
+            // editFormGroup.input.disabled = false;
+      })
+    })
+
+  }
+
+//   const setAddEditStatusFunc = (e)=>{
+// //     const editFormGroup = document.getElementsByClassName('edit-form-group')[e.target.selectedIndex -1]
+// //     editFormGroup.input.disabled = false;
+// // let editStatusArray = editStatus
+// // editStatusArray[(e.target.selectedIndex)-1] = true
+// // console.log('editStatus set =',editStatusArray)
+// // setEditStatus(editStatusArray)
+
+// console.log('index =',(e.target.selectedIndex))
+//   }
+
+  return (
+    <>
+      <Header />
+      <div className='sidebar-main-container'>
+      <div className="content-body">
+        <div className="container-fluid">
+          <div className="row page-titles mx-0">
+            <div className="col-sm-6 p-md-0">
+              <div className="welcome-text">
+                <h4>Edit Student</h4>
+              </div>
+            </div>
+            <div className="col-sm-6 p-md-0 justify-content-sm-end mt-2 mt-sm-0 d-flex">
+              <ol className="breadcrumb">
+                <li className="breadcrumb-item">
+                  <a href="index.html">Home</a>
+                </li>
+                <li className="breadcrumb-item active">
+                  <a href="javascript:void(0);">Students</a>
+                </li>
+                <li className="breadcrumb-item active">
+                  <a href="javascript:void(0);">Edit Student</a>
+                </li>
+              </ol>
+            </div>
+          </div>
+          <div className="row">
+              <div className="col-xl-12 col-xxl-12 col-sm-12">
+                <div className="card">
+                  <div className="card-header">
+                    <h5 className="card-title">Basic Info</h5>
+                  </div>
+                  <div>
+                    <form action="#" method="post">
+                      <div className="row">
+                        
+                        <div className="col-lg-6 col-md-6 col-sm-12">
+                          <div className="form-group">
+                            <label className="form-label">Enrollment No.</label>
+                            <input
+                              type="text"
+                              value={inpval.RegistrationNo}
+                              disabled
+
+                              name="Name"
+                              class="form-control"
+                              id="exampleInputPassword1"
+                            />
+                          </div>
+                        </div>
+                        <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                          <div className="edit-form-group form-group">
+                            <label className="form-label">Name</label>
+                            <input
+                              type="text"
+                              value={inpval.Name}
+                              disabled
+
+                              name="Name"
+                              class="form-control"
+                              id="exampleInputPassword1"
+                            />
+                          </div>
+                          <CreateIcon className="editIcon"/>
+                        </div>
+                        <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                          <div className="edit-form-group form-group">
+                            <label className="form-label">Number</label>
+                            <input
+                              type="text"
+                              max="10"
+                              value={inpval.Number}
+                              disabled
+onChange={(e) => {
+                                setINP({
+                                  ...inpval,
+                                  [e.target.name]: e.target.value,
+                                });
+                                
+                              }}
+                              name="Number"
+                              class="form-control"
+                              id="exampleInputPassword1"
+                            />
+                          </div>
+                          <CreateIcon className="editIcon" />
+                        </div>
+                        <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                          <div className="edit-form-group form-group">
+                            <label className="form-label">Email</label>
+                            <input
+                              type="email"
+                              value={inpval.Email}
+                              disabled
+onChange={(e) => {
+                                setINP({
+                                  ...inpval,
+                                  [e.target.name]: e.target.value,
+                                });
+                                
+                              }}
+                              name="Email"
+                              class="form-control"
+                              id="exampleInputPassword1"
+                            />
+                          </div>
+                          <CreateIcon className="editIcon" />
+                        </div>
+                        <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                          <div className="edit-form-group form-group">
+                            <label className="form-label">Parent Name</label>
+                            <input
+                              type="text"
+                              value={inpval.Pname}
+                              disabled
+onChange={(e) => {
+                                setINP({
+                                  ...inpval,
+                                  [e.target.name]: e.target.value,
+                                });
+                                
+                              }}
+                              name="Pname"
+                              class="form-control"
+                              id="exampleInputPassword1"
+                            />
+                          </div>
+                          <CreateIcon className="editIcon" />
+                        </div>
+                        <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                          <div className="edit-form-group form-group">
+                            <label className="form-label">Parent Number</label>
+                            <input
+                              type="text"
+                              max="10"
+                              value={inpval.Pnumber}
+                              disabled
+onChange={(e) => {
+                                setINP({
+                                  ...inpval,
+                                  [e.target.name]: e.target.value,
+                                });
+                                
+                              }}
+                              name="Pnumber"
+                              class="form-control"
+                              id="exampleInputPassword1"
+                            />
+                          </div>
+                          <CreateIcon className="editIcon" />
+                        </div>
+                        <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                          <div className="edit-form-group form-group">
+                            <label className="form-label">
+                              Registration Date
+                            </label>
+                            <input
+                              type="text"
+                              disabled
+
+                              name="RegistrationDate"
+                              class="form-control"
+                              id="exampleInputEmail1"
+                              aria-describedby="emailHelp"
+                              value={inpval.RegistrationDate}
+                            />
+                          </div>
+                          <CreateIcon className="editIcon" />
+                        </div>
+
+                        <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                          <div className="edit-form-group form-group">
+                            <label className="form-label">Counsellor</label>
+                            {counselor && (
+                              <div>
+                                <input
+                                type="text"
+                                  className="counselor-section custom-select mr-sm-2"
+                                  required
+                                  name="counselor"
+                                  value = {inpval.Counselor}
+                                  disabled
+                                  
+                                />
+                                  
+                               
+                              </div>
+                            )}
+                          </div>
+                          <CreateIcon className="editIcon" />
+                        </div>
+
+                        
+                        <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                          <div className="edit-form-group form-group">
+                            <label className="form-label">
+                              Registration Amount
+                            </label>
+                            <input
+                              type="text"
+                              max="10"
+                              value={inpval.RegistrationFees}
+                              disabled
+onChange={(e) => {
+                                setINP({
+                                  ...inpval,
+                                  [e.target.name]: e.target.value,
+                                });
+                                
+                              }}
+                              name="RegistrationFees"
+                              class="form-control"
+                              id="exampleInputPassword1"
+                            />
+                          </div>
+                          <CreateIcon className="editIcon" />
+                        </div>
+
+                        <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                          <div className="edit-form-group form-group">
+                            <label className="form-label">Course Fees</label>
+                            <input
+                              type="text"
+                              max="10"
+                              disabled
+                              
+                              value={inpval.CourseFees}
+                              name="CourseFees"
+                              class="form-control"
+                              id="exampleInputPassword1"
+                            />
+                          </div>
+                          <CreateIcon className="editIcon" />
+                        </div>
+
+                        <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                          <div className="edit-form-group form-group">
+                            <label className="form-label">Batch mode</label>
+                            <input
+                              id="exampleInputPassword1"
+                              type="select"
+                              name="BatchMode"
+                              class="form-control"
+                              disabled
+                              value={inpval.BatchMode}
+
+                            />
+                              
+                          </div>
+                          <CreateIcon className="editIcon" />
+                        </div>
+                        <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                          <div className="edit-form-group form-group">
+                            <label className="form-label">Payment Method</label>
+                            <input
+                              id="exampleInputPassword1"
+                              type="select"
+                              name="PaymentMethod"
+                              class="form-control"
+                              disabled
+                              value={inpval.PaymentMethod}
+
+                            />
+                              
+                          </div>
+                          <CreateIcon className="editIcon" />
+                        </div>
+
+                        {/* Total installment and EMI getter */}
+
+                        {methodStatus === "EMI" && (
+                          <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                            <div className="edit-form-group form-group">
+                              <label className="form-label">
+                                Total EMI Month
+                              </label>
+                              <input
+                                type="text"
+                                disabled
+onChange={(e) => {
+                                  setINP({
+                                    ...inpval,
+                                    [e.target.name]: e.target.value,
+                                  });
+                                  const status = isAllFieldsFilled();
+                                  setAllFieldStatus(status);
+                                }}
+                                name="totalInstallment"
+                                class="form-control"
+                                id="exampleInputPassword1"
+                              />
+                            </div>
+                            <CreateIcon className="editIcon" />
+                          </div>
+                        )}
+                        {methodStatus === "Installment" && (
+                          <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                            <div className="edit-form-group form-group">
+                              <label className="form-label">
+                                Total Installment
+                              </label>
+                              <input
+                                id="exampleInputPassword1"
+                                type="select"
+                                name="totalInstallment"
+                                class="form-control"
+                                disabled
+                                value={inpval.totalInstallment}
+                              />
+                                
+                            </div>
+                            <CreateIcon className="editIcon" />
+                          </div>
+                        )}
+
+                        {methodStatus === "OTP" && (
+                          <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                            <div className="edit-form-group form-group">
+                              <label className="form-label">Full Payment</label>
+                              <input
+                                type="text"
+                                disabled
+onChange={(e) => {
+                                  setINP({
+                                    ...inpval,
+                                    [e.target.name]: e.target.value,
+                                  });
+                                  const status = isAllFieldsFilled();
+                                  setAllFieldStatus(status);
+                                }}
+                                name="paidFees"
+                                class="form-control"
+                                id="exampleInputPassword1"
+                              />
+                            </div>
+                            <CreateIcon className="editIcon" />
+                          </div>
+                        )}
+
+
+                        {methodStatus === "EMI" ? (
+                          <>
+                            <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                              <div className="edit-form-group form-group">
+                                <label className="form-label">
+                                  Payment mode
+                                </label>
+                                <input
+                                  id="exampleInputPassword1"
+                                  type="select"
+                                  name="PaymentMode"
+                                  class="form-control"
+                                  disabled
+                                  value={inpval.PaymentMode}
+
+                               />
+                                
+                              </div>
+                              <CreateIcon className="editIcon" />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="not-emi-section col-lg-6">
+                              <div className="edit-col col-sm-12">
+                                <div className="edit-form-group form-group">
+                                  <label className="form-label">
+                                    Payment mode
+                                  </label>
+                                  <input
+                                    id="exampleInputPassword1"
+                                    type="select"
+                                    name="PaymentMode"
+                                    class="form-control"
+                                    disabled
+                                    value={inpval.PaymentMode}
+
+                                  />
+                                   
+                                </div>
+                                <CreateIcon className="editIcon" />
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                          <div className="edit-form-group form-group">
+                            <label className="form-label">Course Name</label>
+                            {allcourse && (
+                              <input
+                                id="exampleInputPassword1"
+                                type="select"
+                                name="Course"
+                                class="form-control"
+                                disabled
+                                value={inpval.Course}
+
+                              />
+                                
+                            )}
+                          </div>
+                          <CreateIcon className="editIcon" />
+                        </div>
+
+                        <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                          <div className="edit-form-group form-group">
+                            
+                            <div className="date-time-section">
+                              <div className="edit-col">
+                              <div className="date-sec">
+                              <label className="form-label">Batch Join</label>
+                                <input
+                                  type="text"
+                                  disabled
+
+                                  value={inpval.joinDate}
+                                  name="joinDate"
+                                  className="form-control"
+                                />
+                              </div>
+                              <CreateIcon className="editIcon" />
+                              </div>
+                              <div className="edit-col">
+                              <div className="time-sec">
+                                <label className="form-label">Batch Time</label>
+                                <input
+                                  type="time"
+                                  disabled
+
+                                  value={inpval.joinTime}
+                                  name="joinTime"
+                                  className="form-control"
+                                ></input>
+                              </div>
+                              <CreateIcon className="editIcon" />
+                              </div>
+                            </div>
+                          </div>
+                          
+                        </div>
+
+                        <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                          <div className="edit-form-group form-group">
+                            <label className="form-label">Remark</label>
+                            <input
+                              type="text"
+                              disabled
+                              
+                              value={inpval.Remark}
+                              name="Remark"
+                              class="form-control"
+                              id="exampleInputEmail1"
+                              aria-describedby="emailHelp"
+                            />
+                          </div>
+                          <CreateIcon className="editIcon" />
+                        </div>
+
+                       
+
+                      </div>
+                    </form>
+                    
+                    <div className="edit-col col-lg-6 col-md-6 col-sm-12">
+                       
+                        <button type="submit" onClick={addinpdata} className="btn btn-primary">
+                          Submit
+                        </button>
+                        <button type="submit" className="btn btn-light">
+                          Cancel
+                        </button>
+                      </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
+      </div>
+     
+    </>
+
+  )
+}
