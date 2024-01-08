@@ -552,7 +552,11 @@ justify-content: space-between;
 
 .table-responsive{
   max-height: 100vh;
-  overflow: scroll;
+  overflow-y: scroll;
+}
+
+.register-content-body{
+  width: 100vw;
 }
 
 .sheet {

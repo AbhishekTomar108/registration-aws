@@ -101,6 +101,12 @@ const RegisterStudentAdd = () => {
     tempInpVal.year = dateArray[0];
     tempInpVal.totalInstallment = `${tempInpVal.totalInstallment} Installment`
 
+    if(tempInpVal.PaymentMethod==="OTP"){
+
+      tempInpVal.totalInstallment="null"
+
+    }
+
     console.log("register value =", tempInpVal);
     ContextValue.updateProgress(30);
     ContextValue.updateBarStatus(true);

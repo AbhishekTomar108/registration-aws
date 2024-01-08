@@ -134,6 +134,9 @@ const RegisterStudentDevSchema = new mongoose.Schema({
     },
     year:{
         type: String,
+    },
+    index:{
+        type: String,
     }
 
 });

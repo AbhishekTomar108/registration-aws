@@ -302,14 +302,14 @@ export default function Home() {
 
                 <div className="col-xl-3 col-xxl-3 col-sm-6">
                   <div className="widget-stat card p-0 bg-secondary">
-                    <div className="card-body">
+                    <div className="card-body" onClick={moveToAddStudent}>
                       <div className="media">
                         <span className="mr-3">
                         <i class="fa-solid fa-plus"/>
                         </span>
                         <div
                           className="media-body text-white"
-                          onClick={moveToAddStudent}
+                          
                         >
                           <p className="mb-1">Add Registration</p>
                           {/* <div className="progress mb-2 bg-white">
@@ -327,12 +327,12 @@ export default function Home() {
 
                 <div className="col-xl-3 col-xxl-3 col-sm-6">
               <div className="widget-stat card p-0 bg-secondary">
-                <div className="card-body">
+                <div className="card-body" onClick={moveToRegisterStudent}>
                   <div className="media">
                     <span className="mr-3">
                     <i class="fa-regular fa-address-card"/>
                     </span>
-                    <div className="media-body text-white" onClick={moveToRegisterStudent}>
+                    <div className="media-body text-white" >
                       <p className="mb-1">Total Registration</p>
                       <h3 className="text-white">{register && register.length}</h3>
                       {/* <div className="progress mb-2 bg-white">

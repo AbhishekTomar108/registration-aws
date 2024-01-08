@@ -1,4 +1,5 @@
 const { GoogleSpreadsheet } = require('google-spreadsheet');
+const google = require("googleapis");
 const express = require("express");
 const mongoose = require('mongoose')
 const router = express.Router();
@@ -119,6 +120,7 @@ router.post("/google-sheet-data",async(req,res) =>{
 
     await doc.loadInfo(); // loads document properties and worksheets
     const sheet = doc.sheetsByIndex[0];
+   
       
       console.log(doc.title);
       await doc.updateProperties({ title: 'Admission Details 2024' });
@@ -147,16 +149,41 @@ router.post("/google-sheet-data",async(req,res) =>{
 
       await sheet.addRow(data)
       
-       // or use `doc.sheetsById[id]` or `doc.sheetsByTitle[title]`
-      console.log(sheet.title);
-      console.log(sheet.rowCount);
+        // Reload the sheet to get the updated data
+    await sheet.loadCells();
 
-      res.json({"status":true});
+    sheet.rowCount;
+
+    let usedRowCount = 0;
+
+    // Iterate through rows and check if they have values
+    for (let i = 0; i < sheet.rowCount; i++) {
+        const cell = sheet.getCell(i, 0); // Assuming checking the first column for data
+        if (cell.value !== null) {
+            usedRowCount++;
+        } else {
+            break; // Stop checking once an empty row is encountered
+        }
     }
-    catch(error){
-        res.json({"status":false});
-        console.log('error =',error.message)
+
+    console.log('row count =',usedRowCount)
+
+    let updateRegister = await registerStudentDev.updateOne({RegistrationNo:req.body.RegistrationNo},{index:usedRowCount})
+
+    // Find the added row based on some criteria (for example, Enrollment_Id)
+    const addedRow = sheet.getRows({ offset: 1, limit: 1, query: 'Enrollment_Id = ' + req.body.RegistrationNo })[0];
+
+    if (addedRow) {
+      const addedRowId = addedRow._rowNumber; // This is the row number, you can use it as an ID
+      console.log('Added row ID:', addedRowId);
+      res.json({ "status": true, "id": addedRowId });
+    } else {
+      res.json({ "status": false });
     }
+  } catch (error) {
+    res.json({ "status": false });
+    console.log('error =', error.message);
+  }
     
 
 })
@@ -262,6 +289,23 @@ router.post("/google-sheet-data",async(req,res) =>{
 
 // })
 
+// const auth = new google.auth.GoogleAuth({
+//     credentials:{
+//         client_email:'registrationgooglesheet@optical-wall-409909.iam.gserviceaccount.com',
+//         private_key:'-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCNFZEHF0DuPXs+\nDcW3tnCO7K5R0AhBGFljvbyKn5QtNm6fgrTit4CSw49wtVDWxosjk8zSeBThc0Xw\nk4MneJe0o1xVKJ92Yl7CfGj9VbeBX/iuSGDsw7YO5H1s99dWnhlvZXx8BXpt/Hjm\nEpeFPhwZMvg7T+aQZDOlxyZhpvFK7NVF+L6kkGjCG+ZauEzmPzKKH6ULAw2IwPyd\ncwFcGAIcp69EJIE8gzaCRpOeSC2USd5oBkkAGs1xEy/qu1a2Px7bKtlTUj7nq546\nokzNFJqSYBZyxOr0g/OdCEQx5m1fnseBZEf1aDRENn7fRy/W10NRRFoxCIxKVe9g\n6H6albuLAgMBAAECggEAQP7egVXFI/xO+pd9rtTtpeqDpE0igFqnU7vlUDeUHAAn\nlnSwwIGpSfOt8U6Wn1t4XjuI8K1BcVuZrOtIULbNrPpVXyYH0JIg9Zg7BfqnP4Ln\nHeNaQ7kl9lZtMfY7zjunnBo07y3W6TSWvedyxn+GklVY5no4zexbntPQasxt/QXP\nQzQqk+EkvdHu/C1S3kVs45TD0gwjjBXfYAv1XnmwXcH2UGJsCjh+keNVdmFWKb1+\np2Milo86rbe656jH+BycPwgv+Ag0FX13CBh5/4uFg9vRlr1l5OiUaWETQlSusp+5\ncJ4LvR7X1034RIqJDdjPXBAT2Td/SBDs42GJIyTpAQKBgQDE+f4dtZVscxFe3cjB\nBepiTPVEDl2ofE/9/XHDdT7GAj3gNpt8Njfxcrp/Iyxah1RJX4norQ9Yo3mpzRBi\nOFktfQLjqv6sHINn35w5Ab9gAp/1TyAtBgPtu9h38TnjyKptQaj8jHLvgLqrENYJ\nn/mK9A0bdwNiL+BSw6eVpNzC4wKBgQC3XBgWNzDFgkQUDZYD+ixKZZRn+9UZ9MF7\nhbmzTJr5bbEiVNIsZVtW4Weo0O1SEys7/talBj4vO5qJPcoGhxWo9agJMQHvm6lC\nYfJjXJVa/aC+n+vb5OF8tKRc17zO/PzuzJ/JE6uyMXV0aZ57V0Y0uklsxiJCqZWW\nM5V1eBz9OQKBgAQ8H7OB0OmY+7mfaQ6FUwmz/93rtSXHLm0Wgtih76yQJcZpRiSA\ngell/w52siBsImrFbBCdj+Pm99mnt/90mK46rtI4PetzXXvhOdmb6QJmbAv5HIb7\nRyBYVooVnJoCGW/p5nkvh9UQXnMJFKD2WIYdQx7hCyiUQO1mmXbFKZ3jAoGAHPXH\nvCKFanyTohMvQXuO6UU39mB5HPtiX88UMHSF+aVQl9qLw4VSstsxEyHEifULHBO4\n9SGSSsWAN/LxaKyHSENcge8iniSYzCpKLVVfJZrve4wopXd2ActKNnvAj3S3wkPB\nbPHVaXSUV4mjBVoYdZWCqVJ18M92F94X2hDZi0kCgYARpi6PQL4F3bcIwGDwA5lh\nRaZ7tv9DZi6WvJRjy1Kd65oxyljPImcPaxt7I+HuVikub3a1uFoFM/Kk7NJbNHVy\nTaJX84JQSfpLGn9l7beimzGuho8obEJOZKWtK4SIdtgh9p62ji7I6NFKdsfA4myO\nKY9vH2DLSFlOVHibsKmFgg==\n-----END PRIVATE KEY-----\n'
+//     },
+//     scopes: ['https://www.googleapis.com/auth/spreadsheets']
+// })
+
+//  const serviceAccountAuth = new JWT({
+//         email: 'registrationgooglesheet@optical-wall-409909.iam.gserviceaccount.com',
+//         key: '-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCNFZEHF0DuPXs+\nDcW3tnCO7K5R0AhBGFljvbyKn5QtNm6fgrTit4CSw49wtVDWxosjk8zSeBThc0Xw\nk4MneJe0o1xVKJ92Yl7CfGj9VbeBX/iuSGDsw7YO5H1s99dWnhlvZXx8BXpt/Hjm\nEpeFPhwZMvg7T+aQZDOlxyZhpvFK7NVF+L6kkGjCG+ZauEzmPzKKH6ULAw2IwPyd\ncwFcGAIcp69EJIE8gzaCRpOeSC2USd5oBkkAGs1xEy/qu1a2Px7bKtlTUj7nq546\nokzNFJqSYBZyxOr0g/OdCEQx5m1fnseBZEf1aDRENn7fRy/W10NRRFoxCIxKVe9g\n6H6albuLAgMBAAECggEAQP7egVXFI/xO+pd9rtTtpeqDpE0igFqnU7vlUDeUHAAn\nlnSwwIGpSfOt8U6Wn1t4XjuI8K1BcVuZrOtIULbNrPpVXyYH0JIg9Zg7BfqnP4Ln\nHeNaQ7kl9lZtMfY7zjunnBo07y3W6TSWvedyxn+GklVY5no4zexbntPQasxt/QXP\nQzQqk+EkvdHu/C1S3kVs45TD0gwjjBXfYAv1XnmwXcH2UGJsCjh+keNVdmFWKb1+\np2Milo86rbe656jH+BycPwgv+Ag0FX13CBh5/4uFg9vRlr1l5OiUaWETQlSusp+5\ncJ4LvR7X1034RIqJDdjPXBAT2Td/SBDs42GJIyTpAQKBgQDE+f4dtZVscxFe3cjB\nBepiTPVEDl2ofE/9/XHDdT7GAj3gNpt8Njfxcrp/Iyxah1RJX4norQ9Yo3mpzRBi\nOFktfQLjqv6sHINn35w5Ab9gAp/1TyAtBgPtu9h38TnjyKptQaj8jHLvgLqrENYJ\nn/mK9A0bdwNiL+BSw6eVpNzC4wKBgQC3XBgWNzDFgkQUDZYD+ixKZZRn+9UZ9MF7\nhbmzTJr5bbEiVNIsZVtW4Weo0O1SEys7/talBj4vO5qJPcoGhxWo9agJMQHvm6lC\nYfJjXJVa/aC+n+vb5OF8tKRc17zO/PzuzJ/JE6uyMXV0aZ57V0Y0uklsxiJCqZWW\nM5V1eBz9OQKBgAQ8H7OB0OmY+7mfaQ6FUwmz/93rtSXHLm0Wgtih76yQJcZpRiSA\ngell/w52siBsImrFbBCdj+Pm99mnt/90mK46rtI4PetzXXvhOdmb6QJmbAv5HIb7\nRyBYVooVnJoCGW/p5nkvh9UQXnMJFKD2WIYdQx7hCyiUQO1mmXbFKZ3jAoGAHPXH\nvCKFanyTohMvQXuO6UU39mB5HPtiX88UMHSF+aVQl9qLw4VSstsxEyHEifULHBO4\n9SGSSsWAN/LxaKyHSENcge8iniSYzCpKLVVfJZrve4wopXd2ActKNnvAj3S3wkPB\nbPHVaXSUV4mjBVoYdZWCqVJ18M92F94X2hDZi0kCgYARpi6PQL4F3bcIwGDwA5lh\nRaZ7tv9DZi6WvJRjy1Kd65oxyljPImcPaxt7I+HuVikub3a1uFoFM/Kk7NJbNHVy\nTaJX84JQSfpLGn9l7beimzGuho8obEJOZKWtK4SIdtgh9p62ji7I6NFKdsfA4myO\nKY9vH2DLSFlOVHibsKmFgg==\n-----END PRIVATE KEY-----\n',
+//         scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+//       });
+
+// const sheets  = google.sheets({version:"v4",serviceAccountAuth})
+// const spreadsheetId = '1_PMdmi3cd24bTEt3IVANPUvMxYQCQ8t-0zxNSOOF_JU'
+
 router.post("/update-google-sheet-data", async (req, res) => {
     console.log('update google =', req.body);
   
@@ -277,9 +321,16 @@ router.post("/update-google-sheet-data", async (req, res) => {
       await doc.loadInfo(); // loads document properties and worksheets
       const sheet = doc.sheetsByIndex[0];
   
-      const rows = await sheet.getRows({
-        query: `Enrollment_Id = '${req.body.oldRegistrationNo}'`
+    //   const rows = await sheet.getRows({
+    //     query: `Enrollment_Id = '${req.body.oldRegistrationNo}'`
+    //   });
+
+    const rows = await sheet.getRows({
+        offset: 1,
+        limit: 1,
       });
+
+      console.log('rows =',rows)
   
       if (rows.length > 0) {
         const existingRow = rows[0];
@@ -332,6 +383,70 @@ router.post("/update-google-sheet-data", async (req, res) => {
       res.json({ "status": false, "error": error.message });
     }
   });
+
+
+  router.post('/edit-google-sheet', async (req, res) => {
+   
+
+    try {
+        const serviceAccountAuth = new JWT({
+            email: 'registrationgooglesheet@optical-wall-409909.iam.gserviceaccount.com',
+            key: '-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCNFZEHF0DuPXs+\nDcW3tnCO7K5R0AhBGFljvbyKn5QtNm6fgrTit4CSw49wtVDWxosjk8zSeBThc0Xw\nk4MneJe0o1xVKJ92Yl7CfGj9VbeBX/iuSGDsw7YO5H1s99dWnhlvZXx8BXpt/Hjm\nEpeFPhwZMvg7T+aQZDOlxyZhpvFK7NVF+L6kkGjCG+ZauEzmPzKKH6ULAw2IwPyd\ncwFcGAIcp69EJIE8gzaCRpOeSC2USd5oBkkAGs1xEy/qu1a2Px7bKtlTUj7nq546\nokzNFJqSYBZyxOr0g/OdCEQx5m1fnseBZEf1aDRENn7fRy/W10NRRFoxCIxKVe9g\n6H6albuLAgMBAAECggEAQP7egVXFI/xO+pd9rtTtpeqDpE0igFqnU7vlUDeUHAAn\nlnSwwIGpSfOt8U6Wn1t4XjuI8K1BcVuZrOtIULbNrPpVXyYH0JIg9Zg7BfqnP4Ln\nHeNaQ7kl9lZtMfY7zjunnBo07y3W6TSWvedyxn+GklVY5no4zexbntPQasxt/QXP\nQzQqk+EkvdHu/C1S3kVs45TD0gwjjBXfYAv1XnmwXcH2UGJsCjh+keNVdmFWKb1+\np2Milo86rbe656jH+BycPwgv+Ag0FX13CBh5/4uFg9vRlr1l5OiUaWETQlSusp+5\ncJ4LvR7X1034RIqJDdjPXBAT2Td/SBDs42GJIyTpAQKBgQDE+f4dtZVscxFe3cjB\nBepiTPVEDl2ofE/9/XHDdT7GAj3gNpt8Njfxcrp/Iyxah1RJX4norQ9Yo3mpzRBi\nOFktfQLjqv6sHINn35w5Ab9gAp/1TyAtBgPtu9h38TnjyKptQaj8jHLvgLqrENYJ\nn/mK9A0bdwNiL+BSw6eVpNzC4wKBgQC3XBgWNzDFgkQUDZYD+ixKZZRn+9UZ9MF7\nhbmzTJr5bbEiVNIsZVtW4Weo0O1SEys7/talBj4vO5qJPcoGhxWo9agJMQHvm6lC\nYfJjXJVa/aC+n+vb5OF8tKRc17zO/PzuzJ/JE6uyMXV0aZ57V0Y0uklsxiJCqZWW\nM5V1eBz9OQKBgAQ8H7OB0OmY+7mfaQ6FUwmz/93rtSXHLm0Wgtih76yQJcZpRiSA\ngell/w52siBsImrFbBCdj+Pm99mnt/90mK46rtI4PetzXXvhOdmb6QJmbAv5HIb7\nRyBYVooVnJoCGW/p5nkvh9UQXnMJFKD2WIYdQx7hCyiUQO1mmXbFKZ3jAoGAHPXH\nvCKFanyTohMvQXuO6UU39mB5HPtiX88UMHSF+aVQl9qLw4VSstsxEyHEifULHBO4\n9SGSSsWAN/LxaKyHSENcge8iniSYzCpKLVVfJZrve4wopXd2ActKNnvAj3S3wkPB\nbPHVaXSUV4mjBVoYdZWCqVJ18M92F94X2hDZi0kCgYARpi6PQL4F3bcIwGDwA5lh\nRaZ7tv9DZi6WvJRjy1Kd65oxyljPImcPaxt7I+HuVikub3a1uFoFM/Kk7NJbNHVy\nTaJX84JQSfpLGn9l7beimzGuho8obEJOZKWtK4SIdtgh9p62ji7I6NFKdsfA4myO\nKY9vH2DLSFlOVHibsKmFgg==\n-----END PRIVATE KEY-----\n',
+            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        });
+
+        const doc = new GoogleSpreadsheet('1_PMdmi3cd24bTEt3IVANPUvMxYQCQ8t-0zxNSOOF_JU', serviceAccountAuth);
+
+        await doc.loadInfo(); // loads document properties and worksheets
+
+        const sheet = doc.sheetsByIndex[0];
+        let index = parseInt(req.body.index)
+
+        console.log('req body =',req.body)
+
+        // Assume you want to update the values in the first row of "Sheet2"
+        await sheet.loadCells();
+
+        let Enrollment_Id = sheet.getCellByA1(`A${index}`);
+        let Counselor_Name = sheet.getCellByA1(`B${index}`);
+        let Student_Name = sheet.getCellByA1(`C${index}`);
+        let Email_ID = sheet.getCellByA1(`D${index}`);
+        let Contact_No = sheet.getCellByA1(`E${index}`);
+        let Course_Name = sheet.getCellByA1(`F${index}`);
+        let Total_Amount = sheet.getCellByA1(`G${index}`);
+        let Registation_Amount = sheet.getCellByA1(`H${index}`);
+        let Date_of_Reg = sheet.getCellByA1(`I${index}`);
+        let Batch_Allocation = sheet.getCellByA1(`J${index}`);
+        let Payment_Method = sheet.getCellByA1(`K${index}`);
+        let Total_Installment = sheet.getCellByA1(`L${index}`);
+        let Batch_Mode = sheet.getCellByA1(`M${index}`);
+        let Remark = sheet.getCellByA1(`N${index}`);
+
+
+        Enrollment_Id.value = req.body.RegistrationNo;
+        Counselor_Name.value = req.body.Counselor;
+        Student_Name.value = req.body.Name;
+        Email_ID.value = req.body.Email;
+        Contact_No.value = req.body.Number;
+        Course_Name.value = req.body.subCourse;
+        Total_Amount.value = req.body.CourseFees;
+        Registation_Amount.value = req.body.RegistrationFees;
+        Payment_Method.value = req.body.PaymentMethod;
+        Date_of_Reg.value = req.body.RegistrationDate;
+        Batch_Allocation.value = req.body.joinDate;
+        Total_Installment.value = req.body.totalInstallment;
+        Batch_Mode.value = req.body.BatchMode;
+        Remark.value = req.body.Remark;
+
+        await sheet.saveUpdatedCells();  // Save the changes
+
+        res.json({ "status": true });
+    } catch (error) {
+        console.log('error edit  =', error.message);
+        res.json({ "status": false });
+    }
+});
+
   
 
 // end of google-sheet
@@ -963,6 +1078,7 @@ router.post("/registerStudent", async (req, res) => {
     newRegistration = generateRegisterNo(monthStudent,req.body)
     req.body.RegistrationNo = newRegistration
     req.body.RemainingFees = req.body.CourseFees - req.body.RegistrationFees
+    req.body.index = "";
 
     try {
         const savedUser = await registerStudentDev.create(req.body);
@@ -1117,7 +1233,13 @@ const generateRegisterNo = (monthStudent, data) => {
    
 
     let splitCourse = data.subCourse.split(' ');
-    if (splitCourse.length > 1) {
+    if(splitCourse[0]==="MERN"){
+        course = "MRFSD"
+    }
+    else if(splitCourse[0]==="MEAN"){
+        course = "MAFSD"
+    }
+    else if(splitCourse.length > 1) {
         splitCourse.forEach(coursePart => {
             course = `${course}${coursePart[0]}`;
         });
@@ -1164,13 +1286,20 @@ const updateRegisterNo = (monthStudent,data) => {
     let courseCount = oldRegistartion.split('/')[2].split('-')[1]
 
     let oldCourse = oldRegistartion.split('/')[1].split('-')[0]
+    let oldMonth = oldRegistartion.split('/')[2].split('-')[0]
     let newCourse ="";
 
     let year =  data.year;
     let month = data.month;
 
     let splitCourse = data.subCourse.split(' ');
-    if (splitCourse.length > 1) {
+    if(splitCourse[0]==="MERN"){
+        newCourse = "MRFSD"
+    }
+    else if(splitCourse[0]==="MEAN"){
+        newCourse = "MAFSD"
+    }
+    else if(splitCourse.length > 1) {
         splitCourse.forEach(coursePart => {
             newCourse = `${newCourse}${coursePart[0]}`;
         });
@@ -1179,9 +1308,11 @@ const updateRegisterNo = (monthStudent,data) => {
         newCourse = splitCourse[0];
     }
 
-    console.log('course new old =',newCourse,oldCourse)
+    console.log('course new old =',newCourse,oldCourse,monthStudent)
 
-    if(monthStudent){
+    if(monthStudent.length>0)
+    {
+        if(month===oldMonth){
         if(oldCourse===newCourse){
             newRegistrationNo = `UC${year}/${newCourse}-${data.counselorReference}/${month}-${courseCount}`;
         }
@@ -1190,8 +1321,24 @@ const updateRegisterNo = (monthStudent,data) => {
 
         }
     }
+    else{
+        let count = 1
+
+        monthStudent.map(data=>{
+
+            if(newCourse===data.RegistrationNo.split('/')[1].split('-')[0]){
+                count = count+1
+            }
+
+        })
+
+        count = count>10?count:`0${count}`
+        newRegistrationNo = `UC${year}/${newCourse}-${data.counselorReference}/${month}-${count}`;
+    }
+    }
 
     else{
+        console.log('registration no. else =')
         newRegistrationNo = `UC${year}/${newCourse}-${data.counselorReference}/${month}-01`;
 
     }

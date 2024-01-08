@@ -7,6 +7,7 @@ import { StudentContext } from '../context/StudentState';
 import AddIcCallIcon from '@mui/icons-material/AddIcCall';
 import CreateIcon from '@mui/icons-material/Create';
 import EmailIcon from '@mui/icons-material/Email';
+import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import Swal from 'sweetalert2'
 
 // import Home from '../Components/Home'
@@ -155,6 +156,18 @@ export default function RegisterStudent(props) {
     return { startDate: startDateStr, endDate: endDateStr };
   };
 
+  const fetchQueryData = (Query)=>{
+    let filterRegisterData = registerStudent.filter((data) => {
+      return (
+        data.Name.toLowerCase().includes(Query.toLowerCase()) ||
+        data.RegistrationNo.toLowerCase().includes(Query.toLowerCase())||
+        data.Counselor.toLowerCase().includes(Query.toLowerCase())
+      );
+    });
+
+    setFilterRegisterStudent(filterRegisterData)
+  }
+
   const setToTime =(toTime)=>{
     const endDateStr = formatDate(new Date(toTime))
     setRangeDate({...rangeDate, ["endDate"]:endDateStr})
@@ -201,7 +214,7 @@ export default function RegisterStudent(props) {
       <Header />
       <div className='sidebar-main-container'>
        
-        <div className="content-body" style={{ minWidth: "876px" }}>
+        <div className="content-body register-content-body">
           {/* row */}
           <div className="container-fluid">
             {/* <div className="row page-titles mx-0 j-c-space-between">
@@ -299,16 +312,28 @@ export default function RegisterStudent(props) {
               <div className="col-lg-12">
                 <div className="row tab-content">
                   <div id="list-view" className="tab-pane fade active show col-lg-12">
-                    <div className="card w-80">
+                    <div className="card">
                       <div className="card-header">
                         <h4 className="card-title">Register Students List</h4>
 
                       </div>
 
+                      <div class="d-flex mb-20" role="search">
+                      <input
+                        class="form-control me-2"
+                        type="search"
+                        placeholder="Search By Name or Enrollment No. or Counsellor Name"
+                        aria-label="Search"
+                        name="search"
+                        onChange={(e) => fetchQueryData(e.target.value)}
+                      />
+                      {/* <button class="btn btn-outline-dark" type="submit" onClick={fetchQueryData}>Search</button> */}
+                    </div>
 
 
 
-                      <div class="container">
+
+                      <div class="">
 
 
                         <div class="row">
@@ -316,20 +341,22 @@ export default function RegisterStudent(props) {
                           <div class="col-md-12">
 
 
+                          <div class="table-responsive recentOrderTable __web-inspector-hide-shortcut__">
                             <table id="datatable" class="table table-striped table-bordered" cellspacing="0" width="100%">
                               <thead>
                                 <tr>
-                                  <th>Registration No.</th>
+                                 
+                                  <th>Enrollment No.</th>
                                   <th>Name</th>
                                   <th>Contact</th>
                                   <th>Counselor</th>
                                 
                                   <th>Registration Date</th>
                                   <th>course</th>
-                                  <th>Call</th>
-                                  <th>Email</th>
+                                  <th>Parent Name</th>
+                                  <th>Parent Number</th>
                                   <th>Action</th>
-                                  <th>Status</th>
+                                  <th>PDF</th>
                                  
 
                                 </tr>
@@ -349,15 +376,14 @@ export default function RegisterStudent(props) {
                                       <td>{data.Counselor}</td>
                                       <td>{data.RegistrationDate}</td>
                                       <td>{data.Course}</td>
-                                      <td><a href={`tel:${data.Number}`}><AddIcCallIcon/></a></td>
-                                      <td><a href={`mailto:${data.Email}`}><EmailIcon/></a></td>
+                                      <td>{data.Pname}</td>
+                                      <td>{data.Pnumber}</td>
+                                      
                                      <td> <button className="btn btn-primary" disabled={data.status==="Added"?true:false} onClick={e=>moveToAddRegisteredStudent(data)}><CreateIcon /></button></td>
                                       
-                                      <td>
-                                      <span className={`badge badge-rounded badge-${registerStatus[data.status]}`}>
-                                    {data.status}
-                                  </span>
-                                      </td>
+                                     <td><TextSnippetIcon class="pdf-icon" onClick={e=> {navigate("/Add-Registered-Student/registrationReceipt", {
+        state: { data: data },
+      })}}/></td>
                                       
                                     </tr>
                                   )
@@ -366,6 +392,7 @@ export default function RegisterStudent(props) {
 
                               </tbody>
                             </table>
+                            </div>
 
 
                           </div>

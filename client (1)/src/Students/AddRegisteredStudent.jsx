@@ -30,6 +30,7 @@ export default function AddRegisteredStudent
   const [course, setCourse] = useState();
   const [allcourse, setAllCourse] = useState();
   const [registrationDateStatus, setRegistrationDateStatus] = useState(false)
+  const [batchJoinStatus, setBatchJoinStatus] = useState(false)
   const [selectedRunningBatch, setSelectedRunningBatch] = useState()
   const [trainer, setTrainer] = useState('')
   const [counselor, setCouselor] = useState()
@@ -141,6 +142,7 @@ export default function AddRegisteredStudent
     joinDate: data.joinDate,
     month: data.month,
     year: data.year,
+    index:data.index,
     url: '' // Add a file state
   });
 
@@ -182,6 +184,15 @@ export default function AddRegisteredStudent
     tempInpVal.year = dateArray[0];
     }
 
+    if(batchJoinStatus===true){
+      tempInpVal.joinDate = dateConvert(tempInpVal.joinDate);
+    }
+
+    if(tempInpVal.PaymentMethod==="OTP"){
+
+      tempInpVal.totalInstallment="null"
+
+    }
     tempInpVal.totalInstallment = `${tempInpVal.totalInstallment} Installment`
 
     const formData = new FormData();
@@ -205,7 +216,7 @@ export default function AddRegisteredStudent
       const data = await res.json();
 
       const googleSheetResponse = await fetch(
-        "http://localhost:8000/update-google-sheet-data",
+        "http://localhost:8000/edit-google-sheet",
         {
           method: "POST",
           headers: {
@@ -960,7 +971,7 @@ export default function AddRegisteredStudent
                                   className="form-control"
                                 />
                               </div>
-                              <CreateIcon className="editIcon" onClick={e=>{setUpdateEditStatusFunc(13)}} />
+                              <CreateIcon className="editIcon" onClick={e=>{setUpdateEditStatusFunc(13);setBatchJoinStatus(true)}} />
                               </div>
                               <div className="edit-col">
                               <div className="time-sec">
