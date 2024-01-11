@@ -188,7 +188,7 @@ setAdminId(adminId.id[0].code)
     let sender = student.Name
 
     try{
-    let data = await fetch('https://dashboard-backend4-q7gq.onrender.com/Studentsendmessage', {
+    let data = await fetch('http://localhost:8000/Studentsendmessage', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json"

@@ -1047,9 +1047,9 @@ router.get('/getNewCounselorStudent',async(req,res)=>{
 // updated edit register student route for registartion receipt
 
 router.post("/updateRegisterStudent", async (req, res) => {
-    const {id} = req.params
+    
     // console.log("register route =", req.body)
-
+    try {
     const totalMonthRegistration = await totalRegistration.find({"month":req.body.month,"year":req.body.year})
     const Student = await registerStudentDev.findOne({"RegistrationNo":req.body.RegistrationNo})
 
@@ -1062,12 +1062,10 @@ router.post("/updateRegisterStudent", async (req, res) => {
         req.body.RemainingFees = req.body.CourseFees - req.body.RegistrationFees
     
 
-    try {
+  
         const savedUser = await registerStudentDev.updateOne({RegistrationNo:oldRegistrationNo},req.body)
         const data = await registerStudentDev.findOne({RegistrationNo:req.body.RegistrationNo})
-        req.body.oldRegistrationNo = oldRegistrationNo;
-
-       
+        req.body.oldRegistrationNo = oldRegistrationNo;      
             
        
         res.status(200).json(req.body);
@@ -1080,7 +1078,7 @@ router.post("/updateRegisterStudent", async (req, res) => {
 
 router.post("/registerStudent", async (req, res) => {
       // const lastStudent = await registerStudentDev.findOne({}, {}, { sort: { _id: -1 } }).exec();
-
+      try {
     const totalRegistrationNo = await totalRegistration.find({"month":req.body.month,"year":req.body.year})
 
     let newRegistration;
@@ -1090,7 +1088,7 @@ router.post("/registerStudent", async (req, res) => {
     req.body.RemainingFees = req.body.CourseFees - req.body.RegistrationFees
     req.body.index = "";
 
-    try {
+   
         const savedUser = await registerStudentDev.create(req.body);
         console.log('saved user =',savedUser)
         const addRegistrationNo = await totalRegistration.create(req.body)
@@ -1237,7 +1235,9 @@ router.get('/getCounselorNewRegisterStudent/:id',async(req,res)=>{
 // Generate EnrollmentNo
 
 const generateRegisterNo = (monthStudent, data) => {
-    console.log("data of student =",data)
+
+   try
+   {console.log("data of student =",data)
        let course = data.courseCode;
        let newStudentCourse = data.Course
 
@@ -1264,7 +1264,12 @@ const generateRegisterNo = (monthStudent, data) => {
         registrationNo = `UC${year}/${course}-${data.counselorReference}/${month}-01`;
     }
 
-    return registrationNo;
+    return registrationNo;}
+
+    catch(error){
+        console.log("error =",error.message)
+        res.status(500).json({ error: "Something went wrong" });
+    }
 };
 
 
@@ -1272,17 +1277,19 @@ const generateRegisterNo = (monthStudent, data) => {
 // update generate enrollment no
 
 const updateRegisterNo = async(totalMonthRegistration,Student,data) => {
-    console.log("update register =", data)
+   
+  try {
+    console.log("update register =", data,Student)
 
-    let oldRegistartion = data.RegistrationNo
-    let newRegistrationNo
+    let oldRegistartion = data.RegistrationNo;
+    let newRegistrationNo;
     let courseCount = oldRegistartion.split('/')[2].split('-')[1]
 
     let oldCourseCode = oldRegistartion.split('/')[1].split('-')[0]
     let oldMonth = oldRegistartion.split('/')[2].split('-')[0]
 
-    let oldCourse = Student.Course
-    let newCourse =data.Course;
+    let oldCourse = Student.Course;
+    let newCourse = data.Course;
     let newCourseCode =data.courseCode;
 
     let year =  data.year;
@@ -1346,16 +1353,7 @@ const updateRegisterNo = async(totalMonthRegistration,Student,data) => {
 
         }
 
-        // monthStudent.map(data=>{
-
-        //     if(newCourse===data.RegistrationNo.split('/')[1].split('-')[0]){
-        //         count = count+1
-        //     }
-
-        // })
-
-        // count = count>10?count:`0${count}`
-        // newRegistrationNo = `UC${year}/${newCourse}-${data.counselorReference}/${month}-${count}`;
+       
     }
     }
 
@@ -1366,7 +1364,12 @@ const updateRegisterNo = async(totalMonthRegistration,Student,data) => {
     }
 
 
- return newRegistrationNo;
+ return newRegistrationNo;}
+
+ catch(error){
+    console.log("error =",error.message)
+    res.status(500).json({ error: "Something went wrong" });
+ }
 };
 
 

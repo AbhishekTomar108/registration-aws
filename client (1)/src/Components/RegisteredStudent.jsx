@@ -15,7 +15,7 @@ const RegisteredStudent = () => {
   })
 
   const getRegisteredStudent = async () => {
-    const res = await fetch("https://dashboard-backend4-q7gq.onrender.com/getregisterStudent", {
+    const res = await fetch("http://localhost:8000/getregisterStudent", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

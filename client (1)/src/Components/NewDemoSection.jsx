@@ -43,7 +43,7 @@ function NewDemoSection() {
         let selectDemo;
         if(user==="counselor")  
         {    
-        selectDemo = await fetch(`https://dashboard-backend4-q7gq.onrender.com/getRangeCounselorDemoes/${id}`,{
+        selectDemo = await fetch(`http://localhost:8000/getRangeCounselorDemoes/${id}`,{
           method:"GET",
           headers:{
             "startDate":rangeDate.startDate,
@@ -52,7 +52,7 @@ function NewDemoSection() {
         })
     }
     else{
-        selectDemo = await fetch(`https://dashboard-backend4-q7gq.onrender.com/getRangeTrainerDemoes/${id}`,{
+        selectDemo = await fetch(`http://localhost:8000/getRangeTrainerDemoes/${id}`,{
             method:"GET",
             headers:{
               "startDate":rangeDate.startDate,

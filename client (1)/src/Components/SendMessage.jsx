@@ -191,7 +191,7 @@ export default function SendMessage() {
     const formData = new FormData();
     formData.append('file', selectedImage);
 
-    // await fetch('https://dashboard-backend4-q7gq.onrender.com/upload', {
+    // await fetch('http://localhost:8000/upload', {
     //   method: 'POST',
     //   body: formData,
     // })
@@ -213,7 +213,7 @@ export default function SendMessage() {
 
     console.log('check id =', checkedId)
 
-    let data = await fetch('https://dashboard-backend4-q7gq.onrender.com/sendmessage', {
+    let data = await fetch('http://localhost:8000/sendmessage', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json"

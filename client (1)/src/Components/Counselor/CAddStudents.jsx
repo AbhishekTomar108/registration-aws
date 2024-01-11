@@ -54,7 +54,7 @@ export default function CAddCounselor() {
     ContextValue.updateBarStatus(true)
 
     try{
-    const res = await fetch('https://dashboard-backend4-q7gq.onrender.com/addCounselor', {
+    const res = await fetch('http://localhost:8000/addCounselor', {
       method: 'POST',
       body: formData,
     });

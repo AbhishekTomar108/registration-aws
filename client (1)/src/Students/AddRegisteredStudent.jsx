@@ -111,6 +111,8 @@ export default function AddRegisteredStudent
   // const { udata, setUdata } = useContext(adddata);
   const navigate = useNavigate();
 
+  let installmentStatus = data.totalInstallment==="null"?true:false
+
   const [inpval, setINP] = useState({
     Name: data.Name,
     Batch: '',
@@ -194,7 +196,17 @@ export default function AddRegisteredStudent
       tempInpVal.totalInstallment="null"
 
     }
-    tempInpVal.totalInstallment = `${tempInpVal.totalInstallment} Installment`
+
+    
+
+    if(tempInpVal.totalInstallment.includes("Installment")===false)
+    {
+
+       tempInpVal.totalInstallment = `${tempInpVal.totalInstallment} Installment`
+
+    }
+    
+     
 
     const formData = new FormData();
 
@@ -205,7 +217,7 @@ export default function AddRegisteredStudent
     ContextValue.updateProgress(30)
     ContextValue.updateBarStatus(true)
     try {
-      const res = await fetch('https://dashboard-backend4-q7gq.onrender.com/updateRegisterStudent', {
+      const res = await fetch('http://localhost:8000/updateRegisterStudent', {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
@@ -217,7 +229,7 @@ export default function AddRegisteredStudent
       const data = await res.json();
 
       const googleSheetResponse = await fetch(
-        "https://dashboard-backend4-q7gq.onrender.com/edit-google-sheet",
+        "http://localhost:8000/edit-google-sheet",
         {
           method: "POST",
           headers: {
