@@ -74,6 +74,7 @@ const RegisterStudentAdd = () => {
     counselorReference: "",
     month: "",
     year: "",
+    courseCode:""
   });
 
   function isAllFieldsFilled() {
@@ -206,16 +207,19 @@ const RegisterStudentAdd = () => {
 
   const setMainCourse = (subCourse) => {
     let mainCourse;
+    let courseCode;
     course.map((data) => {
       data.subCourse.map((element) => {
-        if (element === subCourse) {
+        if (element.course === subCourse) {
           mainCourse = data.mainCourse;
+          courseCode = element.courseCode;
+          console.log("element =",element)
         }
       });
     });
 
-    console.log("sub and main Course =", subCourse, mainCourse);
-    setINP({ ...inpval, ["Course"]: mainCourse, ["subCourse"]: subCourse });
+    console.log("sub and main Course =", subCourse, mainCourse,courseCode,course);
+    setINP({ ...inpval, ["Course"]: mainCourse, ["subCourse"]: subCourse, ["courseCode"]:courseCode });
 
     const status = isAllFieldsFilled();
     setAllFieldStatus(status);
@@ -751,7 +755,7 @@ const RegisterStudentAdd = () => {
                                   --select Course Name--
                                 </option>
                                 {allcourse.map((data) => {
-                                  return <option value={data}>{data}</option>;
+                                  return <option value={data.course}>{data.course}</option>;
                                 })}
                               </select>
                             )}

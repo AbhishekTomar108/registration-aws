@@ -143,6 +143,7 @@ export default function AddRegisteredStudent
     month: data.month,
     year: data.year,
     index:data.index,
+    courseCode:data.courseCode,
     url: '' // Add a file state
   });
 
@@ -307,20 +308,38 @@ export default function AddRegisteredStudent
     setINP(tempInpVal)
   };
 
+  // const setMainCourse = (subCourse) => {
+  //   let mainCourse;
+  //   course.map((data) => {
+  //     data.subCourse.map((element) => {
+  //       if (element === subCourse) {
+  //         mainCourse = data.mainCourse;
+  //       }
+  //     });
+  //   });
+
+  //   console.log("sub and main Course =", subCourse, mainCourse);
+  //   setINP({ ...inpval, ["Course"]: mainCourse, ["subCourse"]: subCourse });
+
+   
+  // };
+
+
   const setMainCourse = (subCourse) => {
     let mainCourse;
+    let courseCode;
     course.map((data) => {
       data.subCourse.map((element) => {
-        if (element === subCourse) {
+        if (element.course === subCourse) {
           mainCourse = data.mainCourse;
+          courseCode = element.courseCode;
         }
       });
     });
 
     console.log("sub and main Course =", subCourse, mainCourse);
-    setINP({ ...inpval, ["Course"]: mainCourse, ["subCourse"]: subCourse });
+    setINP({ ...inpval, ["Course"]: mainCourse, ["subCourse"]: subCourse, ["courseCode"]:courseCode });
 
-   
   };
 
   const setCounselorData = (e) => {
@@ -939,7 +958,7 @@ export default function AddRegisteredStudent
                                   --select Course Name--
                                 </option>
                                 {allcourse.map((data) => {
-                                  return <option value={data}>{data}</option>;
+                                  return <option value={data.course}>{data.course}</option>;
                                 })}
                               </select>
                             )}

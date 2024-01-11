@@ -1281,7 +1281,7 @@ img {
 
 #invoice-POS{
 
-  padding:2mm;
+  padding:5px;
   margin: 0 auto;
   width: 50vw;
   background: #FFF;
@@ -1349,7 +1349,7 @@ p{
 
 .address-info{
   background: #ff8c5e47;
-  padding: 10px;
+  padding: 5px;
 }
 
 .address-info h6{
@@ -1358,6 +1358,7 @@ p{
 }
 .address-info h2{
   color: black;
+  margin-bottom: 2px;
 }
 
 .media-body p{
@@ -1386,6 +1387,7 @@ table{
   
   padding: 3px;
   font-size: 15px;
+  color: black !important;
 }
 
 
@@ -1400,15 +1402,16 @@ table{
   background-color: #ce3607 !important ;
 }
 
-#legalcopy{
-  margin-top: 5mm;
-}
+/* #legalcopy{
+  margin-top:2mm;
+} */
 
 .registration-point{
   display: grid;
   grid-template-columns: auto auto;
     row-gap: 10px;
-    margin-top: 10px;
+    margin-top: 5px;
+    text-align: justify;
 }
 
 .registration-point span{
@@ -1420,6 +1423,11 @@ table{
  
   margin-left: 10px;
   font-size: 12px;
+  color: black !important;
+}
+
+.Signaturee h2{
+  color: black !important;
 }
 
 .registration-point li::marker{

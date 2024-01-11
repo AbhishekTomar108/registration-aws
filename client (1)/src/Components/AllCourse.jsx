@@ -48,8 +48,10 @@ export default function AllCourse() {
 
     console.log('sub course =',mainCourse)
     Swal.fire({
-        title: 'Enter New Course Name',
-        input: 'text',
+        title: 'Enter New Course Name and Code',
+        html:
+            '<input id="courseName" class="swal2-input" placeholder="Course Name">' +
+            '<input id="avatarUrl" class="swal2-input" placeholder="Avatar URL">',
         inputAttributes: {
           autocapitalize: 'off'
         },
@@ -59,7 +61,11 @@ export default function AllCourse() {
         allowOutsideClick: () => !Swal.isLoading()
       }).then((result) => {
         if (result.isConfirmed) {
-            addNewSubCourse(result.value,mainCourse)
+
+          const courseName = document.getElementById('courseName').value;
+            const courseCode = document.getElementById('avatarUrl').value;
+
+            addNewSubCourse(courseName,courseCode,mainCourse)
           Swal.fire({
             title: `${result.value}`,
             
@@ -109,7 +115,7 @@ export default function AllCourse() {
   }
 
 
-  const addNewSubCourse = async(courseData,mainCourse)=>{
+  const addNewSubCourse = async(courseData,courseCode,mainCourse)=>{
     ContextValue.updateProgress(30)
     ContextValue.updateBarStatus(true)
 
@@ -122,7 +128,7 @@ export default function AllCourse() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({"subCourse":courseData,"mainCourse":mainCourse})
+        body: JSON.stringify({"subCourse":courseData,"mainCourse":mainCourse,"courseCode":courseCode})
       });
       
       ContextValue.updateProgress(100)
@@ -154,7 +160,7 @@ export default function AllCourse() {
 
       <Header />
       <div className='sidebar-main-container'>
-        <Sidebar />
+       
 
         <div className="content-body" style={{ minWidth: "876px" }}>
           {/* row */}
@@ -229,9 +235,9 @@ export default function AllCourse() {
     >
          <div className="accordion-body">
           
-      {data.subCourse.map(element=>{
+      {data.subCourse.map((element,index)=>{
         return(
-         <li> {element}</li>
+         <li> {element.course}({element.courseCode})</li>
         )
       })}
    

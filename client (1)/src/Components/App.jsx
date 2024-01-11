@@ -114,7 +114,8 @@ export default function App() {
             <Route exact path='admin/' element={<Home />} />
             <Route exact path='/Add-Registered-Student' element={<RegisterStudentAdd/>} />
             <Route exact path='Registered-Student/Add-Registered-Student' element={<AddRegisteredStudent/>} />
-            <Route exact path='admin/AllCourse' element={<AllCourse />} />
+            {/* <Route exact path='admin/AllCourse' element={<AllCourse />} /> */}
+            <Route exact path='/AllCourse' element={<AllCourse />} />
             <Route exact path='admin/AllBatchTiming' element={<AllBatchTiming />} />
             <Route exact path='/Registered-Student' element={<RegisterStudent />} />
             {/* <Route exact path='admin/Registered-Student/Add-Registered-Student' element={<RegisterStudent />} /> */}

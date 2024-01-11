@@ -56,6 +56,7 @@ export default function Home() {
   const [upcomingDemoList, setUpcomingDemoList] = useState();
   const [upcomingDemoStudent, setUpcomingDemoStudent] = useState();
   const [allCourse, setAllCourse] = useState();
+  const [allCourseLength, setAllCourseLength] = useState();
   const [course, setCourse] = useState();
   const [weekDaysBatch, setWeekDaysbatch] = useState();
   const [weekEndBatch, setWeekEndBatch] = useState();
@@ -83,6 +84,21 @@ export default function Home() {
     }
   };
 
+  const getAllCourses = async () => {
+    console.log("all course function");
+    ContextValue.updateProgress(30);
+    ContextValue.updateBarStatus(true);
+
+    let allCourse = await ContextValue.getAllMainSubCourse();
+
+    console.log("all course =", allCourse);
+    setAllCourse(allCourse.allCourse);
+    setAllCourseLength(allCourse.courses.length);
+    setCourse(allCourse.courses);
+    ContextValue.updateProgress(100);
+    ContextValue.updateBarStatus(false);
+  };
+
   // async function fetchAdminStatus() {
   //   ContextValue.updateProgress(30);
   //   ContextValue.updateBarStatus(true);
@@ -103,7 +119,7 @@ export default function Home() {
   //       getNewDemo();
   //       getAllBatches();
   //       getUpcomingDemo();
-  //       getAllCourses();
+       
   //     } else {
   //       navigation("/");
   //       // alert("you are not authorized");
@@ -125,6 +141,7 @@ export default function Home() {
   useEffect(() => {
     // fetchAdminStatus();
     getRegisteredStudent()
+    getAllCourses();
   }, []);
 
   const getRegisteredStudent = async()=>{
@@ -346,7 +363,35 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </div>   
+            </div>  
+
+            <div className="col-xl-3 col-xxl-3 col-sm-6">
+                  <div className="widget-stat card p-0 bg-danger">
+                    <div className="card-body">
+                      <div className="media">
+                        <span className="mr-3">
+                          <i class="fa-regular fa-newspaper" />
+                        </span>
+                        <div
+                          className="media-body text-white"
+                          onClick={moveToAllCourses}
+                        >
+                          <p className="mb-1">All Course</p>
+                          <h3 className="text-white">
+                            {allCourseLength && allCourseLength}
+                          </h3>
+                          {/* <div className="progress mb-2 bg-white">
+                        <div
+                          className="progress-bar progress-animated bg-light"
+                          style={{ width: "30%" }}
+                        />
+                      </div> */}
+                          {/* <small>30% Increase in 30 Days</small> */}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div> 
               
               
               </div>

@@ -134,6 +134,18 @@ function RegistrationReceipt() {
                       <h6 className="itemtext">{data.PaymentMethod}</h6>
                     </td>
                   </tr>
+
+                  {data.PaymentMethod==="Installment" &&
+                     <tr className="service">
+                     <td className="tableitem">
+                       <h6 className="itemtext">Total Installment</h6>
+                     </td>
+ 
+                     <td className="tableitem">
+                       <h6 className="itemtext">{data.totalInstallment}</h6>
+                     </td>
+                   </tr>
+                  }
                   
 
                   <tr className="service">

@@ -22,6 +22,7 @@ const deletedBatches = require("../models/DeletedBatch");
 const FixDemo = require("../models/FixDemo");
 const NewDemo = require("../models/DemoList");
 const DemoStudent = require("../models/DemoStudent");
+const totalRegistration = require("../models/TotalRegistrationNo");
 const inst = require("../models/inst");
 const DataModel = require('../models/filterdata');
 const multer = require("multer");
@@ -125,7 +126,7 @@ router.post("/google-sheet-data",async(req,res) =>{
       console.log(doc.title);
       await doc.updateProperties({ title: 'Admission Details 2024' });
 
-      const HEADERS = ['Enrollment_Id','Counselor_Name','Student_Name','Email_ID','Contact_No', 'Course_Name','Total_Amount','Registation_Amount','Date_of_Reg','Batch_Allocation','Payment_Method','Total_Installment','Batch_Mode','Remark']
+      const HEADERS = ['Enrollment_Id','Counselor_Name','Student_Name','Email_ID','Contact_No', 'Course_Name','Total_Amount','Registation_Amount','Date_of_Reg','Expected_Batch_Allocation','Batch_Allocation','Payment_Method','Total_Installment','Batch_Mode','Remark']
       await sheet.setHeaderRow(HEADERS)
 
       let data = { 
@@ -139,7 +140,8 @@ router.post("/google-sheet-data",async(req,res) =>{
         Total_Amount: req.body.CourseFees,
         Registation_Amount:req.body.RegistrationFees,
         Date_of_Reg:req.body.RegistrationDate,
-        Batch_Allocation:req.body.joinDate,
+        Expected_Batch_Allocation:req.body.joinDate,
+        Batch_Allocation:"",
         Payment_Method:req.body.PaymentMethod,
         Batch_Mode:req.body.BatchMode,
         Remark:req.body.Remark,
@@ -1043,23 +1045,28 @@ router.get('/getNewCounselorStudent',async(req,res)=>{
 
 router.post("/updateRegisterStudent", async (req, res) => {
     const {id} = req.params
-    console.log("register route =", req.body)
+    // console.log("register route =", req.body)
 
-    const monthStudent = await registerStudentDev.find({"month":req.body.month,"year":req.body.year})
+    const totalMonthRegistration = await totalRegistration.find({"month":req.body.month,"year":req.body.year})
+    const Student = await registerStudentDev.findOne({"RegistrationNo":req.body.RegistrationNo})
 
 
 
-        const updateRegistration = updateRegisterNo(monthStudent,req.body)
+        const updateRegistration = updateRegisterNo(totalMonthRegistration,Student,req.body)
         console.log('update registration',updateRegistration)
         let oldRegistrationNo = req.body.RegistrationNo
         req.body.RegistrationNo = updateRegistration
         req.body.RemainingFees = req.body.CourseFees - req.body.RegistrationFees
-        console.log('req body after =',req.body)
+    
 
     try {
         const savedUser = await registerStudentDev.updateOne({RegistrationNo:oldRegistrationNo},req.body)
         const data = await registerStudentDev.findOne({RegistrationNo:req.body.RegistrationNo})
         req.body.oldRegistrationNo = oldRegistrationNo;
+
+        if(updateRegistration!==Student){
+            let addtotalRegister  =await totalRegistration.create(req.body)
+        }
         res.status(200).json(req.body);
         console.log('updated register student =',savedUser,data)
     } catch (error) {
@@ -1071,11 +1078,11 @@ router.post("/updateRegisterStudent", async (req, res) => {
 router.post("/registerStudent", async (req, res) => {
       // const lastStudent = await registerStudentDev.findOne({}, {}, { sort: { _id: -1 } }).exec();
 
-    const monthStudent = await registerStudentDev.find({"month":req.body.month,"year":req.body.year})
+    const totalRegistrationNo = await totalRegistration.find({"month":req.body.month,"year":req.body.year})
 
     let newRegistration;
     
-    newRegistration = generateRegisterNo(monthStudent,req.body)
+    newRegistration = generateRegisterNo(totalRegistrationNo,req.body)
     req.body.RegistrationNo = newRegistration
     req.body.RemainingFees = req.body.CourseFees - req.body.RegistrationFees
     req.body.index = "";
@@ -1083,6 +1090,7 @@ router.post("/registerStudent", async (req, res) => {
     try {
         const savedUser = await registerStudentDev.create(req.body);
         console.log('saved user =',savedUser)
+        const addRegistrationNo = await totalRegistration.create(req.body)
         res.status(200).json(savedUser);
     } catch (error) {
         console.log(error.message);
@@ -1226,31 +1234,12 @@ router.get('/getCounselorNewRegisterStudent/:id',async(req,res)=>{
 // Generate EnrollmentNo
 
 const generateRegisterNo = (monthStudent, data) => {
-       let course = '';
-
-    // const inputString = student.RegistrationNo;
-    // const lastYearMatch = inputString.match(/UC(\d{4})/);
-   
-
-    let splitCourse = data.subCourse.split(' ');
-    if(splitCourse[0]==="MERN"){
-        course = "MRFSD"
-    }
-    else if(splitCourse[0]==="MEAN"){
-        course = "MAFSD"
-    }
-    else if(splitCourse.length > 1) {
-        splitCourse.forEach(coursePart => {
-            course = `${course}${coursePart[0]}`;
-        });
-    } 
-    else {
-        course = splitCourse[0];
-    }
+    console.log("data of student =",data)
+       let course = data.courseCode;
+       let newStudentCourse = data.Course
 
     let registrationNo;
-    // let year =  data.RegistrationDate.split('-')[0];
-    // let wordMonth = data.RegistrationDate.split('-')[1];
+   
 
     let year =  data.year;
     let month = data.month;
@@ -1259,7 +1248,8 @@ const generateRegisterNo = (monthStudent, data) => {
              let courseCount = 1;
 
             monthStudent.map(data=>{
-                if(data.RegistrationNo.split("/")[1].split("-")[0]===course){
+                if(data.Course===newStudentCourse){
+
                     courseCount = courseCount+1
                 }
             })
@@ -1278,51 +1268,75 @@ const generateRegisterNo = (monthStudent, data) => {
 
 // update generate enrollment no
 
-const updateRegisterNo = (monthStudent,data) => {
-  
+const updateRegisterNo = (totalMonthRegistration,Student,data) => {
+    console.log("update register =", data)
 
     let oldRegistartion = data.RegistrationNo
     let newRegistrationNo
     let courseCount = oldRegistartion.split('/')[2].split('-')[1]
 
-    let oldCourse = oldRegistartion.split('/')[1].split('-')[0]
+    let oldCourseCode = oldRegistartion.split('/')[1].split('-')[0]
     let oldMonth = oldRegistartion.split('/')[2].split('-')[0]
-    let newCourse ="";
+
+    let oldCourse = Student.Course
+    let newCourse =data.Course;
+    let newCourseCode =data.courseCode;
 
     let year =  data.year;
     let month = data.month;
 
-    let splitCourse = data.subCourse.split(' ');
-    if(splitCourse[0]==="MERN"){
-        newCourse = "MRFSD"
-    }
-    else if(splitCourse[0]==="MEAN"){
-        newCourse = "MAFSD"
-    }
-    else if(splitCourse.length > 1) {
-        splitCourse.forEach(coursePart => {
-            newCourse = `${newCourse}${coursePart[0]}`;
-        });
-    } 
-    else {
-        newCourse = splitCourse[0];
-    }
 
-    console.log('course new old =',newCourse,oldCourse,monthStudent)
-
-    if(monthStudent.length>0)
+    if(totalMonthRegistration.length>0)
     {
         if(month===oldMonth){
         if(oldCourse===newCourse){
-            newRegistrationNo = `UC${year}/${newCourse}-${data.counselorReference}/${month}-${courseCount}`;
+
+            if(oldCourseCode===newCourseCode){
+
+                console.log('code is same =',newCourseCode,data.counselorReference)
+
+                newRegistrationNo = `UC${year}/${newCourseCode}-${data.counselorReference}/${month}-${courseCount}`;
+            }
+
+            else{
+                console.log('code is not same =',oldCourseCode,newCourseCode,data.counselorReference)
+            newRegistrationNo = `UC${year}/${oldCourseCode}-${newCourseCode}-${data.counselorReference}/${month}-${courseCount}`;
+
+            }
         }
         else{
-            newRegistrationNo = `UC${year}/${oldCourse}-${newCourse}-${data.counselorReference}/${month}-${courseCount}`;
+            let count = 1;
+            totalMonthRegistration.map(data=>{
+                if(data.Course===newCourse){
+                    count = count + 1 
+                }
+            })
+            count = count>10?count:`0${count}`
+            newRegistrationNo = `UC${year}/${oldCourseCode}-${newCourseCode}-${data.counselorReference}/${month}-${count}`;
 
         }
     }
+
     else{
         let count = 1
+
+        totalMonthRegistration.map(data=>{
+            if(data.Course===newCourse){
+                count = count + 1
+            }
+        })
+
+        count = count>10?count:`0${count}`
+
+        if(oldCourseCode===newCourseCode){
+            console.log('month is not same =',newCourseCode,data.counselorReference)
+
+            newRegistrationNo = `UC${year}/${newCourseCode}-${data.counselorReference}/${month}-${count}`;
+        }
+        else{
+            newRegistrationNo = `UC${year}/${oldCourseCode}-${newCourseCode}-${data.counselorReference}/${month}-${count}`;
+
+        }
 
         monthStudent.map(data=>{
 
@@ -4579,8 +4593,17 @@ router.post("/addNewSubCourse", async (req, res) => {
         let Course = await subCourse.findOne({mainCourse:req.body.mainCourse})
 
         let mainSubcourse = Course.subCourse
+        let course = req.body.subCourse;
+        let courseCode = req.body.courseCode;
+
+        data = {
+            "course":course,
+            "courseCode":courseCode
+        }
         console.log('subCourse =',Course,mainSubcourse,req.body)
-        mainSubcourse.push(req.body.subCourse)
+        // mainSubcourse.push(req.body.subCourse)
+        mainSubcourse.push(data)
+        // let updateCourse = await subCourse.findByIdAndUpdate({_id:Course._id},{$set:{subCourse:{"course":mainSubcourse,"courseCode":courseCode}}})
         let updateCourse = await subCourse.findByIdAndUpdate({_id:Course._id},{$set:{subCourse:mainSubcourse}})
 
         res.send({ "status": "active" })

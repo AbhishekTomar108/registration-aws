@@ -137,6 +137,9 @@ const RegisterStudentDevSchema = new mongoose.Schema({
     },
     index:{
         type: String,
+    },
+    courseCode:{
+        type: String,
     }
 
 });
