@@ -1324,6 +1324,7 @@ const updateRegisterNo = async(totalMonthRegistration,Student,data) => {
 
     else{
         let count = 1
+        console.log("count",count)
 
         totalMonthRegistration.map(data=>{
             if(data.Course===newCourse){

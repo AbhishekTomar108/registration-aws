@@ -39,7 +39,7 @@ import { HashLoader } from "react-spinners";
     
 
     try{
-    let data = await fetch(`http://localhost:8000/${user}`, {
+    let data = await fetch(`https://dashboard-backend4-q7gq.onrender.com/${user}`, {
 
       method: "POST",
       headers: {

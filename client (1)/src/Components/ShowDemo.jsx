@@ -30,7 +30,7 @@ function ShowDemo() {
 
     // const getTrainerdemo = async () => {
 
-    //     const res = await fetch("http://localhost:8000/getDemoes", {
+    //     const res = await fetch("https://dashboard-backend4-q7gq.onrender.com/getDemoes", {
     //         method: "POST",
     //         headers: {
     //             "Content-Type": "application/json"

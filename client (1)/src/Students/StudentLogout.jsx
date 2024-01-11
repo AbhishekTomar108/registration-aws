@@ -19,7 +19,7 @@ export default function StudentLogout() {
     e.preventDefault()
     console.log('login', login)
 
-    fetch("http://localhost:8000/login", {
+    fetch("https://dashboard-backend4-q7gq.onrender.com/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

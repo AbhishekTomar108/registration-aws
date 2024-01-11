@@ -66,7 +66,7 @@ export default function Home() {
   const [getuserdata, setUserdata] = useState("");
   console.log("trainer");
   const getTrainerdata = async () => {
-    const res = await fetch("http://localhost:8000/trainer", {
+    const res = await fetch("https://dashboard-backend4-q7gq.onrender.com/trainer", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -174,7 +174,7 @@ export default function Home() {
 
     let checkId = [{ id }];
 
-    let sendData = await fetch("http://localhost:8000/sendmessage", {
+    let sendData = await fetch("https://dashboard-backend4-q7gq.onrender.com/sendmessage", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: text, checkid: checkId, from: "admin" }),
