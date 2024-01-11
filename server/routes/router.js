@@ -349,6 +349,7 @@ router.post("/update-google-sheet-data", async (req, res) => {
         existingRow.Registation_Amount = req.body.RegistrationFees;
         existingRow.Date_of_Reg = req.body.RegistrationDate;
         existingRow.Batch_Allocation = req.body.joinDate;
+        existingRow.Batch_Allocation = req.body.joinDate;
         existingRow.Payment_Method = req.body.PaymentMethod;
         existingRow.Batch_Mode = req.body.BatchMode;
         existingRow.Remark = req.body.Remark;
@@ -418,11 +419,12 @@ router.post("/update-google-sheet-data", async (req, res) => {
         let Total_Amount = sheet.getCellByA1(`G${index}`);
         let Registation_Amount = sheet.getCellByA1(`H${index}`);
         let Date_of_Reg = sheet.getCellByA1(`I${index}`);
-        let Batch_Allocation = sheet.getCellByA1(`J${index}`);
-        let Payment_Method = sheet.getCellByA1(`K${index}`);
-        let Total_Installment = sheet.getCellByA1(`L${index}`);
-        let Batch_Mode = sheet.getCellByA1(`M${index}`);
-        let Remark = sheet.getCellByA1(`N${index}`);
+        let Expected_Batch_Allocation = sheet.getCellByA1(`J${index}`);
+        let Batch_Allocation = sheet.getCellByA1(`K${index}`);
+        let Payment_Method = sheet.getCellByA1(`L${index}`);
+        let Total_Installment = sheet.getCellByA1(`M${index}`);
+        let Batch_Mode = sheet.getCellByA1(`N${index}`);
+        let Remark = sheet.getCellByA1(`O${index}`);
 
 
         Enrollment_Id.value = req.body.RegistrationNo;
@@ -435,7 +437,8 @@ router.post("/update-google-sheet-data", async (req, res) => {
         Registation_Amount.value = req.body.RegistrationFees;
         Payment_Method.value = req.body.PaymentMethod;
         Date_of_Reg.value = req.body.RegistrationDate;
-        Batch_Allocation.value = req.body.joinDate;
+        Expected_Batch_Allocation.value=req.body.joinDate;
+        Batch_Allocation.value = "";
         Total_Installment.value = req.body.totalInstallment;
         Batch_Mode.value = req.body.BatchMode;
         Remark.value = req.body.Remark;
@@ -1052,7 +1055,7 @@ router.post("/updateRegisterStudent", async (req, res) => {
 
 
 
-        const updateRegistration = updateRegisterNo(totalMonthRegistration,Student,req.body)
+        const updateRegistration = await updateRegisterNo(totalMonthRegistration,Student,req.body)
         console.log('update registration',updateRegistration)
         let oldRegistrationNo = req.body.RegistrationNo
         req.body.RegistrationNo = updateRegistration
@@ -1064,9 +1067,9 @@ router.post("/updateRegisterStudent", async (req, res) => {
         const data = await registerStudentDev.findOne({RegistrationNo:req.body.RegistrationNo})
         req.body.oldRegistrationNo = oldRegistrationNo;
 
-        if(updateRegistration!==Student){
-            let addtotalRegister  =await totalRegistration.create(req.body)
-        }
+       
+            
+       
         res.status(200).json(req.body);
         console.log('updated register student =',savedUser,data)
     } catch (error) {
@@ -1268,7 +1271,7 @@ const generateRegisterNo = (monthStudent, data) => {
 
 // update generate enrollment no
 
-const updateRegisterNo = (totalMonthRegistration,Student,data) => {
+const updateRegisterNo = async(totalMonthRegistration,Student,data) => {
     console.log("update register =", data)
 
     let oldRegistartion = data.RegistrationNo
@@ -1313,6 +1316,8 @@ const updateRegisterNo = (totalMonthRegistration,Student,data) => {
             })
             count = count>10?count:`0${count}`
             newRegistrationNo = `UC${year}/${oldCourseCode}-${newCourseCode}-${data.counselorReference}/${month}-${count}`;
+            data.registrationNo = newRegistrationNo
+            let addtotalRegister  =await totalRegistration.create(data)
 
         }
     }
@@ -1335,19 +1340,21 @@ const updateRegisterNo = (totalMonthRegistration,Student,data) => {
         }
         else{
             newRegistrationNo = `UC${year}/${oldCourseCode}-${newCourseCode}-${data.counselorReference}/${month}-${count}`;
+            data.registrationNo = newRegistrationNo
+            let addtotalRegister  =await totalRegistration.create(data)
 
         }
 
-        monthStudent.map(data=>{
+        // monthStudent.map(data=>{
 
-            if(newCourse===data.RegistrationNo.split('/')[1].split('-')[0]){
-                count = count+1
-            }
+        //     if(newCourse===data.RegistrationNo.split('/')[1].split('-')[0]){
+        //         count = count+1
+        //     }
 
-        })
+        // })
 
-        count = count>10?count:`0${count}`
-        newRegistrationNo = `UC${year}/${newCourse}-${data.counselorReference}/${month}-${count}`;
+        // count = count>10?count:`0${count}`
+        // newRegistrationNo = `UC${year}/${newCourse}-${data.counselorReference}/${month}-${count}`;
     }
     }
 
