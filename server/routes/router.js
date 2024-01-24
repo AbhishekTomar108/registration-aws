@@ -1106,7 +1106,7 @@ router.post("/registerStudent", async (req, res) => {
         console.log("else remaining fees")
         req.body.RemainingFees = req.body.CourseFees - req.body.RegistrationFees
     }
-            console.log("remaining fees=",req.body.RemainingFees)
+           
     req.body.index = "";
 
    
