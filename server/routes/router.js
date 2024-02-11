@@ -169,7 +169,7 @@ const beforeMemoryUsage = process.memoryUsage();
         }
     }
 
-    console.log('row count =',usedRowCount)
+    console.log('row count number =',usedRowCount)
 
     let updateRegister = await registerStudentDev.updateOne({RegistrationNo:req.body.RegistrationNo},{index:usedRowCount})
 
