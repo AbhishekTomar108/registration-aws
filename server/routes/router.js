@@ -337,7 +337,7 @@ router.post("/update-google-sheet-data", async (req, res) => {
         limit: 1,
       });
 
-      console.log('rows =',rows)
+
   
       if (rows.length > 0) {
         const existingRow = rows[0];
