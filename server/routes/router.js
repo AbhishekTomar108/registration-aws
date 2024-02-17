@@ -122,6 +122,7 @@ const beforeMemoryUsage = process.memoryUsage();
 
     await doc.loadInfo(); // loads document properties and worksheets
     const sheet = doc.sheetsByIndex[1];
+          console.log("hello")
    
       
       console.log(doc.title);
