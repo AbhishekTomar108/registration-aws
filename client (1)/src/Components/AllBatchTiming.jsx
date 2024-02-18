@@ -71,7 +71,7 @@ export default function AllBatchTiming() {
     console.log('all batch =',days,tempBatchTime)
 
     try{
-    let newBatch = await fetch("http://localhost:8000/addNewBatchTime", {
+    let newBatch = await fetch("http://127.0.0.1:8000/addNewBatchTime", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

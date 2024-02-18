@@ -38,7 +38,7 @@ export default function NewStudent() {
   //     confirmButtonText: 'Yes, delete it!'
   //   }).then((result) => {
   //     if (result.isConfirmed) {
-  //       fetch(`http://localhost:8000/deleteuser/${id}`, {
+  //       fetch(`http://127.0.0.1:8000/deleteuser/${id}`, {
   //         method: "DELETE",
   //         headers: {
   //           "Content-Type": "application/json"

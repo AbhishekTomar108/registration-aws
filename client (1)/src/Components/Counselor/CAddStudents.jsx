@@ -54,7 +54,7 @@ export default function CAddCounselor() {
     ContextValue.updateBarStatus(true)
 
     try{
-    const res = await fetch('http://localhost:8000/addCounselor', {
+    const res = await fetch('http://127.0.0.1:8000/addCounselor', {
       method: 'POST',
       body: formData,
     });

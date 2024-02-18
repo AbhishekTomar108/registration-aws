@@ -97,7 +97,7 @@ function EditDemo() {
             
 
             try{
-        const res = await fetch(`http://localhost:8000/updatedemo/${data._id}`, {
+        const res = await fetch(`http://127.0.0.1:8000/updatedemo/${data._id}`, {
             method: 'POST',
             headers:{"Content-Type":"application/json"},
             body: JSON.stringify({Trainer,TrainerId,CounselorId,CounselorName,Date,Time,Course,month,year,day, classLink})

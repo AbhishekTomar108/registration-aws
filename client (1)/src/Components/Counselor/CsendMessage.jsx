@@ -173,7 +173,7 @@ else{
     ContextValue.updateProgress(30)
     ContextValue.updateBarStatus(true)
 
-    let data = await fetch('http://localhost:8000/sendmessage', {
+    let data = await fetch('http://127.0.0.1:8000/sendmessage', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json"

@@ -28,7 +28,7 @@ function CounselorDemo() {
 
     const getTrainerdemo = async () => {
 
-        const res = await fetch("http://localhost:8000/getDemoes", {
+        const res = await fetch("http://127.0.0.1:8000/getDemoes", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

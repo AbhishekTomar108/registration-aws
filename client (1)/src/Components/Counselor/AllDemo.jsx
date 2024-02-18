@@ -61,7 +61,7 @@ function AllDemo()
       }
    
       const deleteDemo = async(id)=>{
-        fetch(`http://localhost:8000/deleteDemo/${id}`, {
+        fetch(`http://127.0.0.1:8000/deleteDemo/${id}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json"

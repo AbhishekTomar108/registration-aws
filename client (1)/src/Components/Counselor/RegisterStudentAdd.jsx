@@ -112,7 +112,7 @@ const RegisterStudentAdd = () => {
     ContextValue.updateProgress(30);
     ContextValue.updateBarStatus(true);
     try {
-      const res = await fetch("http://localhost:8000/registerStudent", {
+      const res = await fetch("http://127.0.0.1:8000/registerStudent", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -125,7 +125,7 @@ const RegisterStudentAdd = () => {
       const data = await res.json();
 
       const googleSheetResponse = await fetch(
-        "http://localhost:8000/google-sheet-data",
+        "http://127.0.0.1:8000/google-sheet-data",
         {
           method: "POST",
           headers: {

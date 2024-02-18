@@ -42,7 +42,7 @@ function Addfee() {
 
         console.log('form data =', formData)
 
-        const res = await fetch('http://localhost:8000/FeeDetail', {
+        const res = await fetch('http://127.0.0.1:8000/FeeDetail', {
             method: 'POST',
             body: formData,
         });

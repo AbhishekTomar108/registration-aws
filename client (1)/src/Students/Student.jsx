@@ -22,7 +22,7 @@ export default function Student() {
 
   const receivemessage = async () => {
     console.log('receive message')
-    const messageRes = await fetch(`http://localhost:8000/receivemessage/${id}`, {
+    const messageRes = await fetch(`http://127.0.0.1:8000/receivemessage/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -36,7 +36,7 @@ export default function Student() {
 
 
 
-    const res = await fetch(`http://localhost:8000/getuser/${id}`, {
+    const res = await fetch(`http://127.0.0.1:8000/getuser/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

@@ -15,7 +15,7 @@ const RegisteredStudent = () => {
   })
 
   const getRegisteredStudent = async () => {
-    const res = await fetch("http://localhost:8000/getregisterStudent", {
+    const res = await fetch("http://127.0.0.1:8000/getregisterStudent", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

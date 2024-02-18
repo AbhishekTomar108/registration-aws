@@ -121,7 +121,7 @@ import Swal from 'sweetalert2'
         ContextValue.updateBarStatus(true)   
       
         try{
-        let selectFees = await fetch("http://localhost:8000/getRangeFees",{
+        let selectFees = await fetch("http://127.0.0.1:8000/getRangeFees",{
           method:"GET",
           headers:{
             "startDate":rangeDate.startDate,
